@@ -582,9 +582,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: ChooseUI
       objectReference: {fileID: 0}
+    - target: {fileID: 4947917533451212113, guid: 8d8010bb0f9cc47238fe0a9ecf8f1318, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4947917535271735853, guid: 8d8010bb0f9cc47238fe0a9ecf8f1318, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: -1317
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8d8010bb0f9cc47238fe0a9ecf8f1318, type: 3}
