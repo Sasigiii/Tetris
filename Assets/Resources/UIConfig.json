@@ -1,0 +1,20 @@
+{
+  "panels": [
+    {
+      "name": "MainUI",
+      "path": "UIPanel/MainUI"
+    },
+    {
+      "name": "ChooseUI",
+      "path": "UIPanel/ChooseUI"
+    },
+    {
+      "name": "LexiconUI",
+      "path": "UIPanel/LexiconUI"
+    },
+    {
+      "name": "LevelBtn",
+      "path": "UIPanel/LevelBtn"
+    }
+  ]
+}
