@@ -146,8 +146,9 @@ GameObject:
   - component: {fileID: 1667175801917563121}
   - component: {fileID: 1667175801917563126}
   - component: {fileID: 1667175801917563127}
-  - component: {fileID: 1667175801917563120}
   - component: {fileID: 1065790206212999510}
+  - component: {fileID: 4828601524857129250}
+  - component: {fileID: 559709721050652156}
   m_Layer: 5
   m_Name: LevelBtn
   m_TagString: Untagged
@@ -215,7 +216,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &1667175801917563120
+--- !u!114 &1065790206212999510
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -224,7 +225,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 1667175801917563122}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: 438.6
+  m_PreferredHeight: 155.26605
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
+--- !u!114 &4828601524857129250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1667175801917563122}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddfd3aab6da61456792b55106d3f60ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -259,7 +280,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1065790206212999510
+  scaleX: 0.9
+  scaleY: 0.9
+  duration: 0.1
+--- !u!114 &559709721050652156
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -268,17 +292,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1667175801917563122}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Script: {fileID: 11500000, guid: 9d9f693861aa646d9a90de0367bb3e49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_IgnoreLayout: 0
-  m_MinWidth: -1
-  m_MinHeight: -1
-  m_PreferredWidth: 438.6
-  m_PreferredHeight: 155.26605
-  m_FlexibleWidth: -1
-  m_FlexibleHeight: -1
-  m_LayoutPriority: 1
+  confirmBtn: {fileID: 4828601524857129250}
+  icon: {fileID: 1667175802863189910}
+  title: {fileID: 4640889107189152834}
 --- !u!1 &1667175802863189910
 GameObject:
   m_ObjectHideFlags: 0
