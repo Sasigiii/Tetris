@@ -13,6 +13,10 @@
       "path": "UIPanel/LexiconUI"
     },
     {
+      "name": "GamePlayUI",
+      "path": "UIPanel/GamePlayUI"
+    },
+    {
       "name": "LevelBtn",
       "path": "UIPanel/LevelBtn"
     }

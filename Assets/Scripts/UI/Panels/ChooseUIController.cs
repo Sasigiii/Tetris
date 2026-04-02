@@ -65,8 +65,7 @@ public class ChooseUIController : BaseController<ChooseUIView, ChooseUIModel>
         levelView.confirmBtn.onClick.AddListener(() =>
         {
             GameContext.CurrentLevel = levelNum;
-            // TODO: Push GameplayUI
-            Debug.Log($"[ChooseUI] Enter level {levelNum}");
+            UIManager.Instance.PushPanel<GamePlayUIController, GamePlayUIView, GamePlayUIModel>("GamePlayUI");
         });
     }
 }
