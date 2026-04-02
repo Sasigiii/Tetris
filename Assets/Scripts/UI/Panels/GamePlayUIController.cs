@@ -523,15 +523,28 @@ public class GamePlayUIController : BaseController<GamePlayUIView, GamePlayUIMod
         }
         _pivotY = nextY;
         SyncPiecePosition();
+        TryApplyMatchesDuringFall();
     }
 
     private void HardDrop()
     {
         while (!WouldCollide(_pivotX, _pivotY - 1, _pieceOffsets))
+        {
             _pivotY--;
+            SyncPiecePosition();
+            TryApplyMatchesDuringFall();
+        }
 
-        SyncPiecePosition();
         LockPiece();
+    }
+
+    private void TryApplyMatchesDuringFall()
+    {
+        int matched = ApplyPieceMatches();
+        if (matched <= 0) return;
+        RefreshCompletedRows();
+        UpdateHud();
+        LogDebug($"MatchFlow FallingMatched matched={matched}, score={Model.score}, completedWords={Model.completedWords}");
     }
 
     private bool WouldCollide(int pivotX, int pivotY, Vector2Int[] offsets)
