@@ -56,16 +56,24 @@ public class ChooseUIController : BaseController<ChooseUIView, ChooseUIModel>
         if (levelView == null) return;
 
         int levelNum = index + 1;
-        levelView.title.text = $"Level {levelNum}";
-
         int maxCleared = ProgressManager.GetMaxLevel(GameContext.CurrentLexicon);
-        levelView.icon.SetActive(levelNum <= maxCleared);
+
+        bool isCleared = levelNum <= maxCleared;
+        bool isPlayable = levelNum <= maxCleared + 1;
+
+        levelView.title.text = $"Level {levelNum}";
+        levelView.icon.SetActive(isCleared);
 
         levelView.confirmBtn.onClick.RemoveAllListeners();
-        levelView.confirmBtn.onClick.AddListener(() =>
+        levelView.confirmBtn.interactable = true;
+
+        if (isPlayable)
         {
-            GameContext.CurrentLevel = levelNum;
-            UIManager.Instance.PushPanel<GamePlayUIController, GamePlayUIView, GamePlayUIModel>("GamePlayUI");
-        });
+            levelView.confirmBtn.onClick.AddListener(() =>
+            {
+                GameContext.CurrentLevel = levelNum;
+                UIManager.Instance.PushPanel<GamePlayUIController, GamePlayUIView, GamePlayUIModel>("GamePlayUI");
+            });
+        }
     }
 }

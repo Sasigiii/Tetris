@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - lexicon: 0
-    maxWordLength: 20
+    maxWordLength: 7
     wordsPerLevel: 8
   - lexicon: 1
-    maxWordLength: 20
+    maxWordLength: 7
     wordsPerLevel: 10
   - lexicon: 2
-    maxWordLength: 20
+    maxWordLength: 7
     wordsPerLevel: 10
   - lexicon: 3
-    maxWordLength: 20
+    maxWordLength: 7
     wordsPerLevel: 10

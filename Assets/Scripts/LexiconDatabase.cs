@@ -79,6 +79,16 @@ public class LexiconDatabase
         );
     }
 
+    public List<WordEntry> GetPlayableWordsForLevel(Lexicon lexicon, int level, int wordsPerLevel)
+    {
+        string table = lexicon.ToString();
+        int offset = (level - 1) * wordsPerLevel;
+        return _db.Query<WordEntry>(
+            $"SELECT * FROM \"{table}\" WHERE LENGTH(headWord) <= 7 ORDER BY wordRank LIMIT ? OFFSET ?",
+            wordsPerLevel, offset
+        );
+    }
+
     public void Close()
     {
         _db?.Close();

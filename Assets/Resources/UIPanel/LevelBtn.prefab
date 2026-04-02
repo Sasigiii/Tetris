@@ -298,6 +298,7 @@ MonoBehaviour:
   confirmBtn: {fileID: 4828601524857129250}
   icon: {fileID: 1667175802863189910}
   title: {fileID: 4640889107189152834}
+  backgroundImage: {fileID: 1667175801917563127}
 --- !u!1 &1667175802863189910
 GameObject:
   m_ObjectHideFlags: 0

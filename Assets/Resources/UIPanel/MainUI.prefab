@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf8f0936cd65043bcb2a08a9400c8ab9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startBtn: {fileID: 7263359558598954206}
+  startBtn: {fileID: 6213107172130138643}
 --- !u!1 &7263359558598954204
 GameObject:
   m_ObjectHideFlags: 0
@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 7263359558598954207}
   - component: {fileID: 7263359558598954200}
   - component: {fileID: 7263359558598954201}
-  - component: {fileID: 7263359558598954206}
+  - component: {fileID: 6213107172130138643}
   m_Layer: 5
   m_Name: EnterBtn
   m_TagString: Untagged
@@ -205,7 +205,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &7263359558598954206
+--- !u!114 &6213107172130138643
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -214,7 +214,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7263359558598954204}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: ddfd3aab6da61456792b55106d3f60ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -249,3 +249,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+  scaleX: 0.9
+  scaleY: 0.9
+  duration: 0.1
