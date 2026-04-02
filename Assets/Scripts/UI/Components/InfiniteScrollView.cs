@@ -35,6 +35,17 @@ public class InfiniteScrollView : MonoBehaviour
         _onItemRender = onItemRender;
         _viewportHeight = ((RectTransform)_scrollRect.viewport ?? (RectTransform)transform).rect.height;
 
+        var csf = _content.GetComponent<ContentSizeFitter>();
+        if (csf != null) csf.enabled = false;
+        var vlg = _content.GetComponent<VerticalLayoutGroup>();
+        if (vlg != null) vlg.enabled = false;
+        var hlg = _content.GetComponent<HorizontalLayoutGroup>();
+        if (hlg != null) hlg.enabled = false;
+
+        _content.anchorMin = new Vector2(_content.anchorMin.x, 1f);
+        _content.anchorMax = new Vector2(_content.anchorMax.x, 1f);
+        _content.pivot = new Vector2(_content.pivot.x, 1f);
+
         _pool?.Clear();
         _activeItems.Clear();
         _lastStartIndex = -1;
@@ -47,6 +58,9 @@ public class InfiniteScrollView : MonoBehaviour
         var sizeDelta = _content.sizeDelta;
         sizeDelta.y = _totalCount * _itemHeight;
         _content.sizeDelta = sizeDelta;
+
+        _content.anchoredPosition = new Vector2(_content.anchoredPosition.x, 0f);
+        _scrollRect.verticalNormalizedPosition = 1f;
 
         RefreshVisibleItems();
     }
@@ -67,6 +81,9 @@ public class InfiniteScrollView : MonoBehaviour
         var sizeDelta = _content.sizeDelta;
         sizeDelta.y = _totalCount * _itemHeight;
         _content.sizeDelta = sizeDelta;
+
+        _content.anchoredPosition = new Vector2(_content.anchoredPosition.x, 0f);
+        _scrollRect.verticalNormalizedPosition = 1f;
 
         RefreshVisibleItems();
     }
@@ -110,7 +127,10 @@ public class InfiniteScrollView : MonoBehaviour
             var rt = go.GetComponent<RectTransform>();
             if (rt != null)
             {
-                rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, -i * _itemHeight);
+                rt.anchorMin = new Vector2(rt.anchorMin.x, 1f);
+                rt.anchorMax = new Vector2(rt.anchorMax.x, 1f);
+                rt.pivot = new Vector2(rt.pivot.x, 1f);
+                rt.anchoredPosition = new Vector2(0f, -i * _itemHeight);
             }
 
             _onItemRender?.Invoke(i, go);

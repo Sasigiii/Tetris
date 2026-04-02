@@ -71,6 +71,14 @@ public class LexiconDatabase
         return _db.ExecuteScalar<int>($"SELECT COUNT(*) FROM \"{table}\"");
     }
 
+    public int GetWordCountByMaxLength(Lexicon lexicon, int maxLength)
+    {
+        string table = lexicon.ToString();
+        return _db.ExecuteScalar<int>(
+            $"SELECT COUNT(*) FROM \"{table}\" WHERE LENGTH(headWord) <= ?", maxLength
+        );
+    }
+
     public void Close()
     {
         _db?.Close();

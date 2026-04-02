@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 354f88e013772475791812a5da40a88a, type: 3}
+  m_Name: LexiconConfig
+  m_EditorClassIdentifier: 
+  entries:
+  - lexicon: 0
+    maxWordLength: 20
+    wordsPerLevel: 8
+  - lexicon: 1
+    maxWordLength: 20
+    wordsPerLevel: 10
+  - lexicon: 2
+    maxWordLength: 20
+    wordsPerLevel: 10
+  - lexicon: 3
+    maxWordLength: 20
+    wordsPerLevel: 10

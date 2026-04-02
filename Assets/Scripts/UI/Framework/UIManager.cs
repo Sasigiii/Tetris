@@ -19,6 +19,7 @@ public class UIManager : MonoBehaviour
     private readonly Dictionary<string, BaseView> _panelCache = new Dictionary<string, BaseView>();
 
     private Transform _canvasTransform;
+    private bool _isTransitioning;
 
     private void Awake()
     {
@@ -57,11 +58,16 @@ public class UIManager : MonoBehaviour
         where TView : BaseView
         where TModel : BaseModel, new()
     {
+        if (_isTransitioning)
+            return;
+
         if (!_panelPaths.TryGetValue(panelName, out string path))
         {
             Debug.LogWarning($"[UIManager] Panel '{panelName}' not found in config");
             return;
         }
+
+        _isTransitioning = true;
 
         if (_panelStack.Count > 0)
             _panelStack.Peek().OnPause();
@@ -71,24 +77,32 @@ public class UIManager : MonoBehaviour
         controller.Initialize(view);
         _panelStack.Push(controller);
         controller.OnEnter();
+
+        _isTransitioning = false;
     }
 
     public void PopPanel()
     {
-        if (_panelStack.Count == 0)
+        if (_isTransitioning || _panelStack.Count == 0)
             return;
+
+        _isTransitioning = true;
 
         var top = _panelStack.Pop();
         top.OnExit();
 
         if (_panelStack.Count > 0)
             _panelStack.Peek().OnResume();
+
+        _isTransitioning = false;
     }
 
     public void PopToRoot()
     {
-        if (_panelStack.Count <= 1)
+        if (_isTransitioning || _panelStack.Count <= 1)
             return;
+
+        _isTransitioning = true;
 
         while (_panelStack.Count > 1)
         {
@@ -97,6 +111,8 @@ public class UIManager : MonoBehaviour
         }
 
         _panelStack.Peek().OnResume();
+
+        _isTransitioning = false;
     }
 
     private TView GetOrCreateView<TView>(string panelName, string path) where TView : BaseView

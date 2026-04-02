@@ -2,6 +2,6 @@ using UnityEngine;
 
 public class ChooseUIView : BaseView
 {
-    public RectTransform content;
+    public InfiniteScrollView scrollView;
     public UIButton returnBtn;
 }
