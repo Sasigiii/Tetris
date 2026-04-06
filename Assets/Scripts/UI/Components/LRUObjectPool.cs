@@ -32,6 +32,10 @@ public class LRUObjectPool
 
         go.SetActive(true);
         _active.Add(go);
+
+        var poolable = go.GetComponent<IPoolable>();
+        poolable?.OnPoolGet();
+
         return go;
     }
 
@@ -39,6 +43,9 @@ public class LRUObjectPool
     {
         if (go == null || !_active.Remove(go))
             return;
+
+        var poolable = go.GetComponent<IPoolable>();
+        poolable?.OnPoolRelease();
 
         go.SetActive(false);
         _pool.AddFirst(go);

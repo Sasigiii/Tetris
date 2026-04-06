@@ -69,16 +69,16 @@ public class UIManager : MonoBehaviour
 
         _isTransitioning = true;
 
-        if (_panelStack.Count > 0)
-            _panelStack.Peek().OnPause();
-
         TView view = GetOrCreateView<TView>(panelName, path);
         var controller = new TController();
         controller.Initialize(view);
-        _panelStack.Push(controller);
-        controller.OnEnter();
 
+        if (_panelStack.Count > 0 && !controller.IsPopup)
+            _panelStack.Peek().OnPause();
+
+        _panelStack.Push(controller);
         _isTransitioning = false;
+        controller.OnEnter();
     }
 
     public void PopPanel()
@@ -91,10 +91,10 @@ public class UIManager : MonoBehaviour
         var top = _panelStack.Pop();
         top.OnExit();
 
-        if (_panelStack.Count > 0)
-            _panelStack.Peek().OnResume();
-
         _isTransitioning = false;
+
+        if (_panelStack.Count > 0 && !top.IsPopup)
+            _panelStack.Peek().OnResume();
     }
 
     public void PopToRoot()

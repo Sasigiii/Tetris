@@ -19,6 +19,18 @@
     {
       "name": "LevelBtn",
       "path": "UIPanel/LevelBtn"
+    },
+    {
+      "name": "GameOverUI",
+      "path": "UIPanel/GameOverUI"
+    },
+    {
+      "name": "SettingsUI",
+      "path": "UIPanel/SettingsUI"
+    },
+    {
+      "name": "WordHintUI",
+      "path": "UIPanel/WordHintUI"
     }
   ]
 }

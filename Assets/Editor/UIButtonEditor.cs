@@ -7,17 +7,6 @@ using TMPro;
 [CanEditMultipleObjects]
 public class UIButtonEditor : Editor
 {
-    private SerializedProperty _scaleX;
-    private SerializedProperty _scaleY;
-    private SerializedProperty _duration;
-
-    private void OnEnable()
-    {
-        _scaleX = serializedObject.FindProperty("scaleX");
-        _scaleY = serializedObject.FindProperty("scaleY");
-        _duration = serializedObject.FindProperty("duration");
-    }
-
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();

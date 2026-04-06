@@ -1,5 +1,7 @@
 public abstract class BaseController
 {
+    public virtual bool IsPopup => false;
+
     public abstract void OnEnter();
     public abstract void OnPause();
     public abstract void OnResume();

@@ -119,6 +119,26 @@ public class WordGrid : MonoBehaviour
         }
     }
 
+    public void ClearAll()
+    {
+        if (_cellTexts == null)
+            CacheComponents();
+
+        for (int r = 0; r < 4; r++)
+        {
+            for (int c = 0; c < ColumnsPerRow; c++)
+            {
+                if (_cellTexts[r] != null && _cellTexts[r][c] != null)
+                    _cellTexts[r][c].text = "";
+                if (_cellImages[r] != null && _cellImages[r][c] != null)
+                    _cellImages[r][c].enabled = false;
+            }
+        }
+
+        ShowAllRows();
+        _rowData = null;
+    }
+
     public int GetTargetRow()
     {
         if (_rowData == null) return -1;

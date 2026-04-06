@@ -6,6 +6,7 @@ public class GameStarter : MonoBehaviour
     {
         var _ = GameContext.Database;
         UIManager.Instance.PushPanel<MainUIController, MainUIView, MainUIModel>("MainUI");
+        AudioManager.Instance?.PlayBGM();
     }
 
     private void OnApplicationQuit()

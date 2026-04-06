@@ -47,5 +47,6 @@ public enum GameState
     Falling,
     Checking,
     GroupTransition,
-    LevelComplete
+    LevelComplete,
+    GameOver
 }

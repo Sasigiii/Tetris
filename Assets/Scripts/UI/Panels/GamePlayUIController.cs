@@ -2,36 +2,85 @@ using UnityEngine;
 
 public class GamePlayUIController : BaseController<GamePlayUIView, GamePlayUIModel>
 {
+    private FloatingScoreEffect _floatingEffect;
+    private int _lastScore;
+
     protected override void OnInitialize()
     {
         View.returnBtn.onClick.RemoveAllListeners();
         View.returnBtn.onClick.AddListener(() => UIManager.Instance.PopPanel());
 
-        View.gamePlayManager.OnLevelComplete += HandleLevelComplete;
+        View.gamePlayManager.OnGameOver += HandleGameOver;
+
+        if (View.floatingScoreTMP != null)
+        {
+            _floatingEffect = View.floatingScoreTMP.GetComponent<FloatingScoreEffect>();
+            if (_floatingEffect == null)
+                _floatingEffect = View.floatingScoreTMP.gameObject.AddComponent<FloatingScoreEffect>();
+            _floatingEffect.Init(View.floatingScoreTMP);
+        }
     }
 
     public override void OnEnter()
     {
         base.OnEnter();
+
+        View.wordGrid.ClearAll();
+        UpdateScoreDisplay(ScoreManager.InitialScore);
+
+        if (View.levelTMP != null)
+            View.levelTMP.text = $"Level {GameContext.CurrentLevel}";
+
+        WordHintUIController.OnHintFinished = OnWordHintFinished;
+        UIManager.Instance.PushPanel<WordHintUIController, WordHintUIView, WordHintUIModel>("WordHintUI");
+    }
+
+    private void OnWordHintFinished()
+    {
+        var scoreManager = View.gamePlayManager.ScoreManager;
+        _lastScore = ScoreManager.InitialScore;
+        UpdateScoreDisplay(ScoreManager.InitialScore);
+        scoreManager.OnScoreChanged += OnScoreChanged;
+
         View.gamePlayManager.StartLevel();
     }
 
     public override void OnExit()
     {
         base.OnExit();
+
+        View.gamePlayManager.ScoreManager.OnScoreChanged -= OnScoreChanged;
+        _floatingEffect?.Cleanup();
         View.gamePlayManager.Cleanup();
-        View.gamePlayManager.OnLevelComplete -= HandleLevelComplete;
+        View.gamePlayManager.OnGameOver -= HandleGameOver;
     }
 
-    private void HandleLevelComplete()
+    private void OnScoreChanged(int newScore)
     {
-        Model.isLevelCleared = true;
+        int delta = newScore - _lastScore;
+        _lastScore = newScore;
 
-        int currentLevel = GameContext.CurrentLevel;
-        ProgressManager.SetMaxLevel(GameContext.CurrentLexicon, currentLevel);
+        UpdateScoreDisplay(newScore);
+        _floatingEffect?.Play(delta);
+    }
 
-        Debug.Log($"[GamePlay] Level {currentLevel} complete!");
+    private void UpdateScoreDisplay(int score)
+    {
+        if (View.scoreTMP != null)
+            View.scoreTMP.text = score.ToString();
+    }
 
-        UIManager.Instance.PopPanel();
+    private void HandleGameOver(bool isCleared)
+    {
+        var scoreManager = View.gamePlayManager.ScoreManager;
+
+        GameOverUIModel.Pending = new GameOverUIModel
+        {
+            isCleared = isCleared,
+            finalScore = scoreManager.Score,
+            starRating = isCleared ? scoreManager.GetStarRating() : 0
+        };
+
+        UIManager.Instance.PushPanel<GameOverUIController, GameOverUIView, GameOverUIModel>("GameOverUI");
     }
 }

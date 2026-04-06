@@ -64,9 +64,6 @@ public class ChooseUIController : BaseController<ChooseUIView, ChooseUIModel>
         levelView.title.text = $"Level {levelNum}";
         levelView.icon.SetActive(isCleared);
 
-        levelView.confirmBtn.onClick.RemoveAllListeners();
-        levelView.confirmBtn.interactable = true;
-
         if (isPlayable)
         {
             levelView.confirmBtn.onClick.AddListener(() =>

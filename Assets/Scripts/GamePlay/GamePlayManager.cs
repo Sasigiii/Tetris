@@ -15,7 +15,10 @@ public class GamePlayManager : MonoBehaviour
     [Header("Spawn Settings")]
     [SerializeField] private int spawnCol = 3;
 
-    public event Action OnLevelComplete;
+    public event Action<bool> OnGameOver;
+
+    private readonly ScoreManager _scoreManager = new ScoreManager();
+    public ScoreManager ScoreManager => _scoreManager;
 
     private GameState _state = GameState.Loading;
     private LexiconConfig _config;
@@ -34,6 +37,8 @@ public class GamePlayManager : MonoBehaviour
 
         if (crossBlock != null)
             crossBlock.gameObject.SetActive(false);
+
+        _scoreManager.Reset();
 
         if (_startCoroutine != null)
             StopCoroutine(_startCoroutine);
@@ -87,7 +92,7 @@ public class GamePlayManager : MonoBehaviour
         {
             Debug.LogWarning("[GamePlayManager] No playable words for this level");
             _state = GameState.LevelComplete;
-            OnLevelComplete?.Invoke();
+            OnGameOver?.Invoke(true);
             return;
         }
 
@@ -168,7 +173,7 @@ public class GamePlayManager : MonoBehaviour
         if (_currentGroupIndex >= _wordGroups.Count)
         {
             _state = GameState.LevelComplete;
-            OnLevelComplete?.Invoke();
+            OnGameOver?.Invoke(true);
             return;
         }
 
@@ -265,13 +270,22 @@ public class GamePlayManager : MonoBehaviour
     private void HandleInput()
     {
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        {
             crossBlock.MoveLeft();
+            AudioManager.Instance?.PlayEvent("blockMove");
+        }
 
         if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
             crossBlock.MoveRight();
+            AudioManager.Instance?.PlayEvent("blockMove");
+        }
 
         if (Input.GetKeyDown(KeyCode.Space))
+        {
             crossBlock.Rotate();
+            AudioManager.Instance?.PlayEvent("blockMove");
+        }
 
         bool fastFall = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
         crossBlock.SetFastFall(fastFall);
@@ -314,6 +328,8 @@ public class GamePlayManager : MonoBehaviour
 
         if (cell.isBlank && !cell.isFilled && cell.letter == bottomLetter)
         {
+            _scoreManager.AddCorrect();
+            AudioManager.Instance?.PlayEvent("fillCorrect");
             wordGrid.FillCell(targetRow, bottomCol, bottomLetter);
 
             if (rowData.IsComplete())
@@ -331,6 +347,15 @@ public class GamePlayManager : MonoBehaviour
         }
         else
         {
+            _scoreManager.AddWrong();
+            AudioManager.Instance?.PlayEvent("fillWrong");
+            if (_scoreManager.IsFailed)
+            {
+                _state = GameState.GameOver;
+                crossBlock.Deactivate();
+                OnGameOver?.Invoke(false);
+                return;
+            }
             ResetBlock();
         }
     }
