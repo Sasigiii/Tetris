@@ -1,10 +1,13 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WordHintUIView : BaseView
 {
-    public InfiniteScrollView scrollView;
+    public ScrollRect scrollRect;
+    public RectTransform content;
+    public GameObject itemPrefab;
     public TextMeshProUGUI countdownTMP;
 
     public Action onEscPressed;

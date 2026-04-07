@@ -1,14 +1,14 @@
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WordHintItemView : MonoBehaviour, IPoolable
 {
-    public TextMeshProUGUI wordTMP;
+    public Text wordText;
 
     public void OnPoolGet()
     {
-        if (wordTMP != null)
-            wordTMP.text = string.Empty;
+        if (wordText != null)
+            wordText.text = string.Empty;
     }
 
     public void OnPoolRelease()

@@ -4,11 +4,12 @@ public class GamePlayUIController : BaseController<GamePlayUIView, GamePlayUIMod
 {
     private FloatingScoreEffect _floatingEffect;
     private int _lastScore;
+    private bool _hintActive;
 
     protected override void OnInitialize()
     {
         View.returnBtn.onClick.RemoveAllListeners();
-        View.returnBtn.onClick.AddListener(() => UIManager.Instance.PopPanel());
+        View.returnBtn.onClick.AddListener(OnReturnClicked);
 
         View.gamePlayManager.OnGameOver += HandleGameOver;
 
@@ -31,12 +32,25 @@ public class GamePlayUIController : BaseController<GamePlayUIView, GamePlayUIMod
         if (View.levelTMP != null)
             View.levelTMP.text = $"Level {GameContext.CurrentLevel}";
 
+        _hintActive = true;
         WordHintUIController.OnHintFinished = OnWordHintFinished;
         UIManager.Instance.PushPanel<WordHintUIController, WordHintUIView, WordHintUIModel>("WordHintUI");
     }
 
+    private void OnReturnClicked()
+    {
+        if (_hintActive)
+        {
+            _hintActive = false;
+            WordHintUIController.OnHintFinished = null;
+            UIManager.Instance.PopPanel();
+        }
+        UIManager.Instance.PopPanel();
+    }
+
     private void OnWordHintFinished()
     {
+        _hintActive = false;
         var scoreManager = View.gamePlayManager.ScoreManager;
         _lastScore = ScoreManager.InitialScore;
         UpdateScoreDisplay(ScoreManager.InitialScore);

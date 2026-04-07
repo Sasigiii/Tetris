@@ -43,11 +43,7 @@ public class GameOverUIController : BaseController<GameOverUIView, GameOverUIMod
             AudioManager.Instance?.PlayEvent("gameOverWin");
 
             if (View.effectObj != null)
-            {
                 View.effectObj.SetActive(true);
-                var ps = View.effectObj.GetComponent<ParticleSystem>();
-                if (ps != null) ps.Play();
-            }
 
             ProgressManager.SetMaxLevel(GameContext.CurrentLexicon, GameContext.CurrentLevel);
 

@@ -14,6 +14,7 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
     private List<WordEntry> _words;
     private Coroutine _countdownCoroutine;
     private bool _finished;
+    private readonly List<GameObject> _spawnedItems = new List<GameObject>();
 
     protected override void OnInitialize()
     {
@@ -29,6 +30,8 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
         base.OnEnter();
         _finished = false;
 
+        ClearItems();
+
         var config = Resources.Load<LexiconConfig>("LexiconConfig");
         var entry = config?.GetEntry(GameContext.CurrentLexicon);
         int wordsPerLevel = entry?.wordsPerLevel ?? 10;
@@ -36,7 +39,17 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
         _words = GameContext.Database.GetPlayableWordsForLevel(
             GameContext.CurrentLexicon, GameContext.CurrentLevel, wordsPerLevel);
 
-        View.scrollView.Initialize(_words.Count, OnRenderItem);
+        for (int i = 0; i < _words.Count; i++)
+        {
+            var go = UnityEngine.Object.Instantiate(View.itemPrefab, View.content);
+            go.SetActive(true);
+            var item = go.GetComponent<WordHintItemView>();
+            if (item != null)
+                item.wordText.text = $"{_words[i].headWord}  {_words[i].tranCn}";
+            _spawnedItems.Add(go);
+        }
+
+        View.scrollRect.verticalNormalizedPosition = 1f;
 
         _countdownCoroutine = View.StartCoroutine(CountdownRoutine());
     }
@@ -46,15 +59,17 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
         base.OnExit();
         View.onEscPressed = null;
         StopCountdown();
+        ClearItems();
     }
 
-    private void OnRenderItem(int index, GameObject go)
+    private void ClearItems()
     {
-        var item = go.GetComponent<WordHintItemView>();
-        if (item == null || index < 0 || index >= _words.Count) return;
-
-        var word = _words[index];
-        item.wordTMP.text = $"{word.headWord}  {word.tranCn}";
+        foreach (var go in _spawnedItems)
+        {
+            if (go != null)
+                UnityEngine.Object.Destroy(go);
+        }
+        _spawnedItems.Clear();
     }
 
     private IEnumerator CountdownRoutine()
@@ -63,12 +78,12 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
 
         while (remaining > 0f)
         {
-            View.countdownTMP.text = $"倒计时：{Mathf.CeilToInt(remaining)}";
+            View.countdownTMP.text = $"倒计时:{Mathf.CeilToInt(remaining)}";
             yield return null;
             remaining -= Time.deltaTime;
         }
 
-        View.countdownTMP.text = "倒计时：0";
+        View.countdownTMP.text = "倒计时:0";
         FinishHint();
     }
 
