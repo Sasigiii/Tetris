@@ -34,6 +34,7 @@ public class AudioManager : MonoBehaviour
     private AudioSource _bgmSource;
     private readonly Dictionary<string, AudioClip> _clipCache = new Dictionary<string, AudioClip>();
     private readonly Dictionary<string, float> _eventVolumes = new Dictionary<string, float>();
+    private float _bgmVolume = 1f;
 
     private bool _bgmEnabled = true;
     public bool BgmEnabled
@@ -44,6 +45,19 @@ public class AudioManager : MonoBehaviour
             _bgmEnabled = value;
             _bgmSource.mute = !value;
             PlayerPrefs.SetInt("bgm_enabled", value ? 1 : 0);
+            PlayerPrefs.Save();
+        }
+    }
+
+    public float BgmVolume
+    {
+        get => _bgmVolume;
+        set
+        {
+            _bgmVolume = Mathf.Clamp01(value);
+            if (_bgmSource != null)
+                _bgmSource.volume = _bgmVolume;
+            PlayerPrefs.SetFloat("vol_bgm", _bgmVolume);
             PlayerPrefs.Save();
         }
     }
@@ -66,7 +80,9 @@ public class AudioManager : MonoBehaviour
         _bgmSource.playOnAwake = false;
 
         _bgmEnabled = PlayerPrefs.GetInt("bgm_enabled", 1) == 1;
+        _bgmVolume = PlayerPrefs.GetFloat("vol_bgm", 1f);
         _bgmSource.mute = !_bgmEnabled;
+        _bgmSource.volume = _bgmVolume;
 
         foreach (var name in EventNames)
         {

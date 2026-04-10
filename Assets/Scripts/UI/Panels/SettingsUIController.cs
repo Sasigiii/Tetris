@@ -19,6 +19,13 @@ public class SettingsUIController : BaseController<SettingsUIView, SettingsUIMod
         View.bgmToggle.isOn = am.BgmEnabled;
         View.bgmToggle.onValueChanged.AddListener(val => am.BgmEnabled = val);
 
+        if (View.bgmVolumeSlider != null)
+        {
+            View.bgmVolumeSlider.onValueChanged.RemoveAllListeners();
+            View.bgmVolumeSlider.value = am.BgmVolume;
+            View.bgmVolumeSlider.onValueChanged.AddListener(val => am.BgmVolume = val);
+        }
+
         for (int i = 0; i < AudioManager.EventNames.Length && i < View.eventSliders.Length; i++)
         {
             var slider = View.eventSliders[i];
@@ -37,6 +44,8 @@ public class SettingsUIController : BaseController<SettingsUIView, SettingsUIMod
         base.OnExit();
 
         View.bgmToggle.onValueChanged.RemoveAllListeners();
+        if (View.bgmVolumeSlider != null)
+            View.bgmVolumeSlider.onValueChanged.RemoveAllListeners();
         foreach (var slider in View.eventSliders)
         {
             if (slider != null)

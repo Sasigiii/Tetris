@@ -141,17 +141,15 @@ public class GamePlayManager : MonoBehaviour
             };
         }
 
-        int blankCount = Random.Range(1, Mathf.Min(4, word.Length + 1));
         var allIndices = new List<int>();
         for (int i = 0; i < word.Length; i++)
             allIndices.Add(i + offset);
 
         var blankIndices = new List<int>();
-        for (int b = 0; b < blankCount && allIndices.Count > 0; b++)
+        if (allIndices.Count > 0)
         {
             int pick = Random.Range(0, allIndices.Count);
             int idx = allIndices[pick];
-            allIndices.RemoveAt(pick);
             blankIndices.Add(idx);
             cells[idx].isBlank = true;
         }
