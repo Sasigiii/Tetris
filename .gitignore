@@ -106,3 +106,5 @@ openspec/
 
 # macOS
 .DS_Store
+.tmp_docs
+*.doc

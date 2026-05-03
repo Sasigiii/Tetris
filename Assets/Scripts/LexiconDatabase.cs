@@ -79,13 +79,22 @@ public class LexiconDatabase
         );
     }
 
-    public List<WordEntry> GetPlayableWordsForLevel(Lexicon lexicon, int level, int wordsPerLevel)
+    public List<WordEntry> GetPlayableWordsForLevel(
+        Lexicon lexicon,
+        int level,
+        int wordsPerLevel,
+        int maxWordLength,
+        bool orderByLengthDesc = false)
     {
         string table = lexicon.ToString();
         int offset = (level - 1) * wordsPerLevel;
+        string orderClause = orderByLengthDesc
+            ? "ORDER BY LENGTH(LOWER(headWord)) DESC, wordRank ASC"
+            : "ORDER BY LENGTH(LOWER(headWord)) ASC, wordRank ASC";
+
         return _db.Query<WordEntry>(
-            $"SELECT * FROM \"{table}\" WHERE LENGTH(headWord) <= 7 ORDER BY wordRank LIMIT ? OFFSET ?",
-            wordsPerLevel, offset
+            $"SELECT * FROM \"{table}\" WHERE LENGTH(headWord) <= ? {orderClause} LIMIT ? OFFSET ?",
+            maxWordLength, wordsPerLevel, offset
         );
     }
 

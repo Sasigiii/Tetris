@@ -5,8 +5,15 @@ using UnityEngine;
 
 public class FloatingScoreEffect : MonoBehaviour
 {
+    public enum PopupStyle
+    {
+        AutoBySign = 0,
+        ComboBonusGold = 1
+    }
+
     private static readonly Color GreenColor = new Color(0.2f, 0.8f, 0.2f, 1f);
     private static readonly Color RedColor = new Color(1f, 0.392f, 0f, 1f);
+    private static readonly Color DefaultComboGoldColor = new Color(1f, 0.84f, 0.2f, 1f);
 
     private const float FloatDistance = 60f;
     private const float FadeInDuration = 0.15f;
@@ -18,6 +25,12 @@ public class FloatingScoreEffect : MonoBehaviour
     private Vector2 _originPos;
     private bool _initialized;
     private readonly List<GameObject> _playing = new List<GameObject>();
+    private Color _comboBonusColor = DefaultComboGoldColor;
+
+    public void SetComboBonusColor(Color color)
+    {
+        _comboBonusColor = color;
+    }
 
     public void Init(TextMeshProUGUI template)
     {
@@ -40,6 +53,11 @@ public class FloatingScoreEffect : MonoBehaviour
 
     public void Play(int delta)
     {
+        Play(delta, PopupStyle.AutoBySign);
+    }
+
+    public void Play(int delta, PopupStyle style)
+    {
         if (!_initialized || delta == 0) return;
 
         var go = _pool.Get();
@@ -53,7 +71,7 @@ public class FloatingScoreEffect : MonoBehaviour
 
         bool isPositive = delta > 0;
         tmp.text = isPositive ? $"+{delta}" : $"{delta}";
-        tmp.color = isPositive ? GreenColor : RedColor;
+        tmp.color = ResolvePopupColor(delta, style);
 
         var rt = tmp.rectTransform;
         var seq = DOTween.Sequence();
@@ -66,6 +84,13 @@ public class FloatingScoreEffect : MonoBehaviour
             _playing.Remove(go);
             _pool.Release(go);
         });
+    }
+
+    private Color ResolvePopupColor(int delta, PopupStyle style)
+    {
+        if (style == PopupStyle.ComboBonusGold)
+            return _comboBonusColor;
+        return delta >= 0 ? GreenColor : RedColor;
     }
 
     public void Cleanup()

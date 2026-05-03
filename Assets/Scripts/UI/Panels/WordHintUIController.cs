@@ -35,9 +35,15 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
         var config = Resources.Load<LexiconConfig>("LexiconConfig");
         var entry = config?.GetEntry(GameContext.CurrentLexicon);
         int wordsPerLevel = entry?.wordsPerLevel ?? 10;
+        int maxWordLength = entry?.maxWordLength ?? 18;
+        bool orderByLengthDesc = entry != null && entry.lengthPriorityForTesting;
 
         _words = GameContext.Database.GetPlayableWordsForLevel(
-            GameContext.CurrentLexicon, GameContext.CurrentLevel, wordsPerLevel);
+            GameContext.CurrentLexicon,
+            GameContext.CurrentLevel,
+            wordsPerLevel,
+            maxWordLength,
+            orderByLengthDesc);
 
         for (int i = 0; i < _words.Count; i++)
         {
@@ -78,12 +84,12 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
 
         while (remaining > 0f)
         {
-            View.countdownTMP.text = $"倒计时:{Mathf.CeilToInt(remaining)}";
+            View.countdownTMP.text = $"提示倒计时:{Mathf.CeilToInt(remaining)}";
             yield return null;
             remaining -= Time.deltaTime;
         }
 
-        View.countdownTMP.text = "倒计时:0";
+        View.countdownTMP.text = "提示倒计时:0";
         FinishHint();
     }
 
