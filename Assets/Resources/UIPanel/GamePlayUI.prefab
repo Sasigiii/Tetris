@@ -6567,6 +6567,9 @@ MonoBehaviour:
   debugMoveLogs: 1
   debugColumnSafetyLogs: 1
   debugScoreTimerLogs: 1
+  debugDrawGridLines: 1
+  debugGridLineColor: {r: 1, g: 0, b: 1, a: 1}
+  debugGridLineDuration: 0
 --- !u!114 &6821370852563403465
 MonoBehaviour:
   m_ObjectHideFlags: 0

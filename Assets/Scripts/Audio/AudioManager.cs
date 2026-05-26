@@ -27,10 +27,10 @@ public class AudioManager : MonoBehaviour
         "星星弹出", "通关音效", "失败音效", "按钮点击"
     };
 
-    private const int SfxPoolCapacity = 8;
+    private const string SfxPoolKey = "sfx";
+    private const int SfxMinRetain = 2;
 
     private AudioConfig _config;
-    private LRUObjectPool _sfxPool;
     private AudioSource _bgmSource;
     private readonly Dictionary<string, AudioClip> _clipCache = new Dictionary<string, AudioClip>();
     private readonly Dictionary<string, float> _eventVolumes = new Dictionary<string, float>();
@@ -96,7 +96,7 @@ public class AudioManager : MonoBehaviour
         templateGo.AddComponent<AudioPoolItem>();
         templateGo.SetActive(false);
 
-        _sfxPool = new LRUObjectPool(templateGo, transform, SfxPoolCapacity);
+        GlobalLRUPool.Instance.Register(SfxPoolKey, templateGo, transform, SfxMinRetain);
     }
 
     public void SetEventVolume(string eventName, float volume)
@@ -128,7 +128,7 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        var go = _sfxPool.Get();
+        var go = GlobalLRUPool.Instance.Get(SfxPoolKey);
         var item = go.GetComponent<AudioPoolItem>();
         item.Source.clip = clip;
         item.Source.volume = volume;
@@ -209,6 +209,6 @@ public class AudioManager : MonoBehaviour
     private IEnumerator ReleaseAfterPlay(GameObject go, float duration)
     {
         yield return new WaitForSeconds(duration + 0.05f);
-        _sfxPool.Release(go);
+        GlobalLRUPool.Instance?.Release(go);
     }
 }

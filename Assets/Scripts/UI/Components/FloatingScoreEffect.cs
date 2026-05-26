@@ -19,9 +19,8 @@ public class FloatingScoreEffect : MonoBehaviour
     private const float FadeInDuration = 0.15f;
     private const float FloatDuration = 0.6f;
     private const float FadeOutDuration = 0.3f;
-    private const int PoolCapacity = 5;
+    private const string PoolKey = "floating-score";
 
-    private LRUObjectPool _pool;
     private Vector2 _originPos;
     private bool _initialized;
     private readonly List<GameObject> _playing = new List<GameObject>();
@@ -47,7 +46,7 @@ public class FloatingScoreEffect : MonoBehaviour
         }
 
         var parent = template.transform.parent;
-        _pool = new LRUObjectPool(template.gameObject, parent, PoolCapacity);
+        GlobalLRUPool.Instance.Register(PoolKey, template.gameObject, parent);
         _initialized = true;
     }
 
@@ -60,7 +59,7 @@ public class FloatingScoreEffect : MonoBehaviour
     {
         if (!_initialized || delta == 0) return;
 
-        var go = _pool.Get();
+        var go = GlobalLRUPool.Instance.Get(PoolKey);
         _playing.Add(go);
 
         var item = go.GetComponent<FloatingScoreItem>();
@@ -82,7 +81,7 @@ public class FloatingScoreEffect : MonoBehaviour
         seq.OnComplete(() =>
         {
             _playing.Remove(go);
-            _pool.Release(go);
+            GlobalLRUPool.Instance?.Release(go);
         });
     }
 
@@ -95,11 +94,12 @@ public class FloatingScoreEffect : MonoBehaviour
 
     public void Cleanup()
     {
+        var pool = GlobalLRUPool.Instance;
         for (int i = _playing.Count - 1; i >= 0; i--)
         {
             var go = _playing[i];
             if (go != null)
-                _pool.Release(go);
+                pool?.Release(go);
         }
         _playing.Clear();
     }
@@ -107,6 +107,7 @@ public class FloatingScoreEffect : MonoBehaviour
     private void OnDestroy()
     {
         Cleanup();
-        _pool?.Clear();
+        if (_initialized)
+            GlobalLRUPool.Instance?.ClearKey(PoolKey);
     }
 }

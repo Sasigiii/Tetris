@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class FloatingScoreItem : MonoBehaviour, IPoolable
 {
+    public string PoolKey => "floating-score";
+
     private TextMeshProUGUI _tmp;
     private Vector2 _originPos;
     private bool _posInitialized;

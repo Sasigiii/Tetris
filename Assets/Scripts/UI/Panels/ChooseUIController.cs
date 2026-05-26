@@ -11,6 +11,13 @@ public class ChooseUIController : BaseController<ChooseUIView, ChooseUIModel>
         _config = Resources.Load<LexiconConfig>("LexiconConfig");
         View.returnBtn.onClick.RemoveAllListeners();
         View.returnBtn.onClick.AddListener(() => UIManager.Instance.PopPanel());
+
+        if (View.wrongBookBtn != null)
+        {
+            View.wrongBookBtn.onClick.RemoveAllListeners();
+            View.wrongBookBtn.onClick.AddListener(() =>
+                UIManager.Instance.PushPanel<WrongBookUIController, WrongBookUIView, WrongBookUIModel>("WrongBookUI"));
+        }
     }
 
     public override void OnEnter()
@@ -63,6 +70,12 @@ public class ChooseUIController : BaseController<ChooseUIView, ChooseUIModel>
 
         levelView.title.text = $"Level {levelNum}";
         levelView.icon.SetActive(isCleared);
+
+        int starCount = ProgressManager.GetMaxStar(GameContext.CurrentLexicon, levelNum);
+        if (levelView.star != null)
+            levelView.star.SetActive(isCleared && starCount > 0);
+        if (levelView.countTMP != null)
+            levelView.countTMP.text = (isCleared && starCount > 0) ? $"X{starCount}" : "";
 
         if (isPlayable)
         {

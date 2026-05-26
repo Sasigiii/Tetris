@@ -283,6 +283,42 @@ public class WordGrid : MonoBehaviour
         return new Vector2(width, height);
     }
 
+    public int GetRowCount()
+    {
+        return rows != null ? rows.Length : 0;
+    }
+
+    public bool TryGetCellWorldCorners(
+        int row,
+        int col,
+        out Vector3 bottomLeft,
+        out Vector3 topLeft,
+        out Vector3 topRight,
+        out Vector3 bottomRight)
+    {
+        bottomLeft = Vector3.zero;
+        topLeft = Vector3.zero;
+        topRight = Vector3.zero;
+        bottomRight = Vector3.zero;
+
+        if (rows == null || row < 0 || row >= rows.Length || rows[row] == null)
+            return false;
+        if (col < 0 || col >= ActiveColumns || col >= rows[row].childCount)
+            return false;
+
+        var cell = rows[row].GetChild(col) as RectTransform;
+        if (cell == null)
+            return false;
+
+        var corners = new Vector3[4];
+        cell.GetWorldCorners(corners);
+        bottomLeft = corners[0];
+        topLeft = corners[1];
+        topRight = corners[2];
+        bottomRight = corners[3];
+        return true;
+    }
+
     private void EnsureRowCapacity(int requiredColumns)
     {
         for (int r = 0; r < rows.Length; r++)

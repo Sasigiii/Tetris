@@ -5,6 +5,8 @@ public class AudioPoolItem : MonoBehaviour, IPoolable
 {
     private AudioSource _source;
 
+    public string PoolKey => "sfx";
+
     public AudioSource Source
     {
         get

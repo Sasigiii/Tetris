@@ -22,4 +22,25 @@ public static class ProgressManager
             PlayerPrefs.Save();
         }
     }
+
+    private static string GetStarKey(LexiconDatabase.Lexicon lexicon, int level)
+    {
+        return $"Star_{lexicon}_{level}";
+    }
+
+    public static int GetMaxStar(LexiconDatabase.Lexicon lexicon, int level)
+    {
+        return PlayerPrefs.GetInt(GetStarKey(lexicon, level), 0);
+    }
+
+    public static void SetMaxStar(LexiconDatabase.Lexicon lexicon, int level, int star)
+    {
+        string key = GetStarKey(lexicon, level);
+        int current = PlayerPrefs.GetInt(key, 0);
+        if (star > current)
+        {
+            PlayerPrefs.SetInt(key, star);
+            PlayerPrefs.Save();
+        }
+    }
 }

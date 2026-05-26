@@ -17,6 +17,7 @@ public static class GameContext
 
     public static void Shutdown()
     {
+        WrongWordManager.Shutdown();
         _db?.Close();
         _db = null;
     }

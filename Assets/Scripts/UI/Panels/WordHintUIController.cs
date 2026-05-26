@@ -10,10 +10,12 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
     public static Action OnHintFinished;
 
     private const float CountdownDuration = 10f;
+    private const string PoolKey = "word-hint";
 
     private List<WordEntry> _words;
     private Coroutine _countdownCoroutine;
     private bool _finished;
+    private bool _poolRegistered;
     private readonly List<GameObject> _spawnedItems = new List<GameObject>();
 
     protected override void OnInitialize()
@@ -32,6 +34,12 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
 
         ClearItems();
 
+        if (!_poolRegistered)
+        {
+            GlobalLRUPool.Instance.Register(PoolKey, View.itemPrefab, View.content);
+            _poolRegistered = true;
+        }
+
         var config = Resources.Load<LexiconConfig>("LexiconConfig");
         var entry = config?.GetEntry(GameContext.CurrentLexicon);
         int wordsPerLevel = entry?.wordsPerLevel ?? 10;
@@ -47,11 +55,10 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
 
         for (int i = 0; i < _words.Count; i++)
         {
-            var go = UnityEngine.Object.Instantiate(View.itemPrefab, View.content);
-            go.SetActive(true);
+            var go = GlobalLRUPool.Instance.Get(PoolKey);
             var item = go.GetComponent<WordHintItemView>();
             if (item != null)
-                item.wordText.text = $"{_words[i].headWord}  {_words[i].tranCn}";
+                item.wordText.text = $"<b><size=28>{_words[i].headWord}</size></b>\n<size=24>{_words[i].tranCn}</size>";
             _spawnedItems.Add(go);
         }
 
@@ -70,10 +77,11 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
 
     private void ClearItems()
     {
+        var pool = GlobalLRUPool.Instance;
         foreach (var go in _spawnedItems)
         {
             if (go != null)
-                UnityEngine.Object.Destroy(go);
+                pool?.Release(go);
         }
         _spawnedItems.Clear();
     }

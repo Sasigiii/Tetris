@@ -46,6 +46,7 @@ public class GameOverUIController : BaseController<GameOverUIView, GameOverUIMod
                 View.effectObj.SetActive(true);
 
             ProgressManager.SetMaxLevel(GameContext.CurrentLexicon, GameContext.CurrentLevel);
+            ProgressManager.SetMaxStar(GameContext.CurrentLexicon, GameContext.CurrentLevel, Model.starRating);
 
             PlayStarAnimation(Model.starRating);
         }

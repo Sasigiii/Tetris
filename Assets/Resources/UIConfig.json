@@ -31,6 +31,10 @@
     {
       "name": "WordHintUI",
       "path": "UIPanel/WordHintUI"
+    },
+    {
+      "name": "WrongBookUI",
+      "path": "UIPanel/WrongBookUI"
     }
   ]
 }

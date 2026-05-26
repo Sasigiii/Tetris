@@ -9,13 +9,12 @@ public class InfiniteScrollView : MonoBehaviour
     [SerializeField] private GameObject _itemPrefab;
     [SerializeField] private float _itemHeight = 100f;
     [SerializeField] private int _bufferCount = 2;
-    [SerializeField] private int _poolCapacity = 30;
 
     private ScrollRect _scrollRect;
     private RectTransform _content;
     private float _viewportHeight;
 
-    private LRUObjectPool _pool;
+    private string _poolKey;
     private int _totalCount;
     private Action<int, GameObject> _onItemRender;
     private readonly Dictionary<int, GameObject> _activeItems = new Dictionary<int, GameObject>();
@@ -46,14 +45,15 @@ public class InfiniteScrollView : MonoBehaviour
         _content.anchorMax = new Vector2(_content.anchorMax.x, 1f);
         _content.pivot = new Vector2(_content.pivot.x, 1f);
 
-        _pool?.Clear();
+        if (!string.IsNullOrEmpty(_poolKey))
+            GlobalLRUPool.Instance?.ClearKey(_poolKey);
         _activeItems.Clear();
         _lastStartIndex = -1;
         _lastEndIndex = -1;
 
-        int visibleCount = Mathf.CeilToInt(_viewportHeight / _itemHeight);
-        int poolCap = Mathf.Max(_poolCapacity, visibleCount + 2 * _bufferCount + 10);
-        _pool = new LRUObjectPool(_itemPrefab, _content, poolCap);
+        var poolable = _itemPrefab.GetComponent<IPoolable>();
+        _poolKey = poolable != null ? poolable.PoolKey : _itemPrefab.name;
+        GlobalLRUPool.Instance.Register(_poolKey, _itemPrefab, _content);
 
         var sizeDelta = _content.sizeDelta;
         sizeDelta.y = _totalCount * _itemHeight;
@@ -70,7 +70,7 @@ public class InfiniteScrollView : MonoBehaviour
         var keys = new List<int>(_activeItems.Keys);
         foreach (int idx in keys)
         {
-            _pool.Release(_activeItems[idx]);
+            GlobalLRUPool.Instance.Release(_activeItems[idx]);
         }
         _activeItems.Clear();
         _lastStartIndex = -1;
@@ -90,7 +90,7 @@ public class InfiniteScrollView : MonoBehaviour
 
     private void RefreshVisibleItems()
     {
-        if (_pool == null || _totalCount <= 0)
+        if (string.IsNullOrEmpty(_poolKey) || _totalCount <= 0)
             return;
 
         float scrollOffset = _content.anchoredPosition.y;
@@ -112,9 +112,10 @@ public class InfiniteScrollView : MonoBehaviour
             if (kvp.Key < startIndex || kvp.Key > endIndex)
                 toRecycle.Add(kvp.Key);
         }
+        var pool = GlobalLRUPool.Instance;
         foreach (int idx in toRecycle)
         {
-            _pool.Release(_activeItems[idx]);
+            pool.Release(_activeItems[idx]);
             _activeItems.Remove(idx);
         }
 
@@ -123,7 +124,7 @@ public class InfiniteScrollView : MonoBehaviour
             if (_activeItems.ContainsKey(i))
                 continue;
 
-            var go = _pool.Get();
+            var go = pool.Get(_poolKey);
             var rt = go.GetComponent<RectTransform>();
             if (rt != null)
             {
@@ -157,6 +158,7 @@ public class InfiniteScrollView : MonoBehaviour
 
     private void OnDestroy()
     {
-        _pool?.Clear();
+        if (!string.IsNullOrEmpty(_poolKey))
+            GlobalLRUPool.Instance?.ClearKey(_poolKey);
     }
 }

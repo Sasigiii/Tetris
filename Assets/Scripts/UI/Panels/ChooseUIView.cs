@@ -4,4 +4,5 @@ public class ChooseUIView : BaseView
 {
     public InfiniteScrollView scrollView;
     public UIButton returnBtn;
+    public UIButton wrongBookBtn;
 }

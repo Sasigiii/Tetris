@@ -20,6 +20,8 @@ public class UIManager : MonoBehaviour
 
     private Transform _canvasTransform;
     private bool _isTransitioning;
+    private PopupBlurOverlay _blurOverlay;
+    private int _popupCount;
 
     private void Awake()
     {
@@ -34,6 +36,7 @@ public class UIManager : MonoBehaviour
         _canvasTransform = transform;
 
         LoadConfig();
+        CreateBlurOverlay();
     }
 
     private void LoadConfig()
@@ -76,7 +79,21 @@ public class UIManager : MonoBehaviour
         if (_panelStack.Count > 0 && !controller.IsPopup)
             _panelStack.Peek().OnPause();
 
+        if (controller.IsPopup)
+        {
+            _popupCount++;
+            if (_popupCount == 1 && _blurOverlay != null)
+            {
+                _blurOverlay.transform.SetAsLastSibling();
+                _blurOverlay.Show(this);
+            }
+        }
+
         _panelStack.Push(controller);
+
+        if (view != null)
+            view.transform.SetAsLastSibling();
+
         _isTransitioning = false;
         controller.OnEnter();
     }
@@ -90,6 +107,16 @@ public class UIManager : MonoBehaviour
 
         var top = _panelStack.Pop();
         top.OnExit();
+
+        if (top.IsPopup)
+        {
+            _popupCount--;
+            if (_popupCount <= 0 && _blurOverlay != null)
+            {
+                _popupCount = 0;
+                _blurOverlay.Hide();
+            }
+        }
 
         _isTransitioning = false;
 
@@ -113,6 +140,25 @@ public class UIManager : MonoBehaviour
         _panelStack.Peek().OnResume();
 
         _isTransitioning = false;
+    }
+
+    private void CreateBlurOverlay()
+    {
+        var go = new GameObject("PopupBlurOverlay");
+        go.transform.SetParent(_canvasTransform, false);
+
+        var rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+
+        var rawImage = go.AddComponent<UnityEngine.UI.RawImage>();
+        rawImage.color = Color.white;
+        rawImage.raycastTarget = true;
+
+        _blurOverlay = go.AddComponent<PopupBlurOverlay>();
+        go.SetActive(false);
     }
 
     private TView GetOrCreateView<TView>(string panelName, string path) where TView : BaseView

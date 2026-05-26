@@ -47,6 +47,9 @@ public class GamePlayManager : MonoBehaviour
     [SerializeField] private bool debugMoveLogs = true;
     [SerializeField] private bool debugColumnSafetyLogs = true;
     [SerializeField] private bool debugScoreTimerLogs = true;
+    [SerializeField] private bool debugDrawGridLines = false;
+    [SerializeField] private Color debugGridLineColor = Color.magenta;
+    [SerializeField] private float debugGridLineDuration = 0f;
 
     public event Action<bool> OnGameOver;
     public event Action<float> OnTimerChanged;
@@ -140,6 +143,7 @@ public class GamePlayManager : MonoBehaviour
         }
 
         UpdateLevelTimer();
+        DrawDiscreteGridDebugLines();
     }
 
     #region Loading
@@ -537,6 +541,10 @@ public class GamePlayManager : MonoBehaviour
         else
         {
             _scoreManager.AddWrong();
+            WrongWordManager.RecordWrong(
+                GameContext.CurrentLexicon,
+                rowData.wordEntry.headWord,
+                rowData.wordEntry.tranCn);
             if (debugScoreTimerLogs)
                 Debug.Log($"[GamePlayManager] Wrong fill: total={_scoreManager.Score}, comboResetTo={_scoreManager.ComboStreak}");
             AudioManager.Instance?.PlayEvent("fillWrong");
@@ -594,6 +602,60 @@ public class GamePlayManager : MonoBehaviour
                   + $"worldX={currentCenterX:0.###}, "
                   + $"firstColX={firstColX:0.###}, lastColX={lastColX:0.###}, "
                   + $"maxCol={Mathf.Max(0, _activeColumns - 1)}");
+    }
+
+    private void DrawDiscreteGridDebugLines()
+    {
+        if (!debugDrawGridLines || wordGrid == null || _activeColumns <= 0)
+            return;
+
+        if (_colWorldX == null || _colWorldX.Length == 0 || _worldCellSize <= 0f)
+            return;
+
+        int lastCol = _activeColumns - 1;
+        int lastRow = wordGrid.GetRowCount() - 1;
+        if (lastCol < 0 || lastRow < 0)
+            return;
+
+        if (!wordGrid.TryGetCellWorldCorners(0, 0, out _, out var firstCellTL, out _, out _))
+            return;
+        if (!wordGrid.TryGetCellWorldCorners(0, lastCol, out _, out _, out var firstCellTR, out _))
+            return;
+        if (!wordGrid.TryGetCellWorldCorners(lastRow, 0, out var lastCellBL, out _, out _, out _))
+            return;
+        if (!wordGrid.TryGetCellWorldCorners(lastRow, lastCol, out _, out _, out _, out var lastCellBR))
+            return;
+
+        float gridTopY = firstCellTL.y;
+        float gridBottomY = lastCellBL.y;
+        float gridLeftX = firstCellTL.x;
+        float gridRightX = firstCellTR.x;
+
+        float mapTopY = _spawnWorldY + _worldCellSize;
+        float mapBottomY = gridBottomY;
+        float z = firstCellTL.z;
+
+        int fallRows = Mathf.Max(0, Mathf.CeilToInt((mapTopY - gridTopY) / _worldCellSize));
+        int wordRows = Mathf.Max(0, Mathf.CeilToInt((gridTopY - gridBottomY) / _worldCellSize));
+        int totalRows = fallRows + wordRows;
+
+        Color lineColor = debugGridLineColor;
+
+        float halfStep = _worldColumnStep * 0.5f;
+        float fullGridLeftX = _colWorldX[0] - halfStep;
+        float fullGridRightX = _colWorldX[lastCol] + halfStep;
+
+        for (int r = 0; r <= totalRows; r++)
+        {
+            float y = mapTopY - r * _worldCellSize;
+            Debug.DrawLine(new Vector3(fullGridLeftX, y, z), new Vector3(fullGridRightX, y, z), lineColor, debugGridLineDuration, false);
+        }
+
+        for (int c = 0; c <= _activeColumns; c++)
+        {
+            float x = (c < _activeColumns) ? _colWorldX[c] - halfStep : _colWorldX[lastCol] + halfStep;
+            Debug.DrawLine(new Vector3(x, mapTopY, z), new Vector3(x, mapBottomY, z), lineColor, debugGridLineDuration, false);
+        }
     }
 
     private int ResolveActiveColumns(List<WordEntry> words)
