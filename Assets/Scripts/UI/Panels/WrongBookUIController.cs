@@ -1,10 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WrongBookUIController : BaseController<WrongBookUIView, WrongBookUIModel>
 {
     public override bool IsPopup => true;
 
-    private bool _initialized;
+    private readonly List<GameObject> _spawnedItems = new List<GameObject>();
 
     protected override void OnInitialize()
     {
@@ -15,12 +17,8 @@ public class WrongBookUIController : BaseController<WrongBookUIView, WrongBookUI
     public override void OnEnter()
     {
         base.OnEnter();
-        _initialized = false;
-        RefreshList();
-    }
+        ClearItems();
 
-    private void RefreshList()
-    {
         Model.wrongWords = WrongWordManager.GetWrongWords(GameContext.CurrentLexicon);
         int total = Model.wrongWords.Count;
 
@@ -28,23 +26,41 @@ public class WrongBookUIController : BaseController<WrongBookUIView, WrongBookUI
         if (View.emptyHintText != null)
             View.emptyHintText.SetActive(!hasData);
 
-        if (!_initialized)
+        for (int i = 0; i < total; i++)
         {
-            View.scrollView.Initialize(total, RenderItem);
-            _initialized = true;
+            var go = Object.Instantiate(View.itemPrefab, View.content);
+            go.SetActive(true);
+            go.transform.SetAsLastSibling();
+
+            var itemView = go.GetComponent<WordHintItemView>();
+            if (itemView != null)
+            {
+                var entry = Model.wrongWords[i];
+                itemView.wordText.text = $"<b><size=28>{entry.headWord}  ×{entry.count}</size></b>\n<size=24>{entry.tranCn}</size>";
+            }
+
+            _spawnedItems.Add(go);
         }
-        else
-        {
-            View.scrollView.Refresh(total);
-        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(View.content);
+
+        if (View.scrollRect != null)
+            View.scrollRect.verticalNormalizedPosition = 1f;
     }
 
-    private void RenderItem(int index, GameObject go)
+    public override void OnExit()
     {
-        var itemView = go.GetComponent<WordHintItemView>();
-        if (itemView == null || index < 0 || index >= Model.wrongWords.Count) return;
+        base.OnExit();
+        ClearItems();
+    }
 
-        var entry = Model.wrongWords[index];
-        itemView.wordText.text = $"<b><size=28>{entry.headWord}  ×{entry.count}</size></b>\n<size=24>{entry.tranCn}</size>";
+    private void ClearItems()
+    {
+        foreach (var go in _spawnedItems)
+        {
+            if (go != null)
+                Object.Destroy(go);
+        }
+        _spawnedItems.Clear();
     }
 }

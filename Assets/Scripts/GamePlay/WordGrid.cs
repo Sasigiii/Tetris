@@ -31,6 +31,9 @@ public class WordGrid : MonoBehaviour
 
     public int ActiveColumns { get; private set; } = DefaultColumns;
 
+    /// <summary>
+    /// 缓存组件引用
+    /// </summary>
     private void CacheComponents()
     {
         _cellRects = new List<RectTransform>[rows.Length];
@@ -83,7 +86,8 @@ public class WordGrid : MonoBehaviour
             }
         }
     }
-
+    
+    //设置行数据并应用单元格显示
     public void SetupGroup(
         List<WordRowData> group,
         int activeColumns,
@@ -229,6 +233,10 @@ public class WordGrid : MonoBehaviour
         return _rowData[row];
     }
 
+    /// <summary>
+    /// 是否完成当前关卡组
+    /// </summary>
+    /// <returns></returns>
     public bool IsGroupComplete()
     {
         if (_rowData == null) return true;

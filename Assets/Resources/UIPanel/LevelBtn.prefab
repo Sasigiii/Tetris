@@ -302,6 +302,7 @@ MonoBehaviour:
   title: {fileID: 4640889107189152834}
   star: {fileID: 3923694437621959722}
   countTMP: {fileID: 6382176663876339008}
+  backgroundImage: {fileID: 1667175801917563127}
 --- !u!1 &1667175802863189910
 GameObject:
   m_ObjectHideFlags: 0

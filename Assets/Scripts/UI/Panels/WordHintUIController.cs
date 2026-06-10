@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WordHintUIController : BaseController<WordHintUIView, WordHintUIModel>
 {
@@ -56,6 +57,7 @@ public class WordHintUIController : BaseController<WordHintUIView, WordHintUIMod
         for (int i = 0; i < _words.Count; i++)
         {
             var go = GlobalLRUPool.Instance.Get(PoolKey);
+            go.transform.SetAsLastSibling();
             var item = go.GetComponent<WordHintItemView>();
             if (item != null)
                 item.wordText.text = $"<b><size=28>{_words[i].headWord}</size></b>\n<size=24>{_words[i].tranCn}</size>";

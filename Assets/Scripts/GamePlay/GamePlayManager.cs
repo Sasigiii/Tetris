@@ -7,41 +7,42 @@ using Random = UnityEngine.Random;
 
 public class GamePlayManager : MonoBehaviour
 {
-    private const float DefaultV0 = 120f;
-    private const int DefaultS0 = ScoreManager.InitialScore;
-    private const int DefaultDeltaS = 10;
-    private const float DefaultAlpha = 25f;
-    private const float DefaultVMax = 260f;
-    private const float DefaultVFast = 600f;
-    private const int DefaultMinGridColumns = 7;
-    private const int DefaultMaxGridColumns = 18;
-    private const float DefaultMinCellSize = 42f;
-    private const float DefaultTmpHorizontalPadding = 6f;
-    private const float DefaultTmpVerticalPadding = 4f;
-    private const float DefaultMinTmpRectSize = 20f;
-    private const float DefaultCrossBlockTmpHorizontalPadding = 6f;
-    private const float DefaultCrossBlockTmpVerticalPadding = 4f;
-    private const float DefaultCrossBlockMinTmpRectSize = 20f;
-    private const float DefaultCrossBlockCompensationGamma = 0.9f;
-    private const float DefaultCrossBlockCompensationMin = 1f;
-    private const float DefaultCrossBlockCompensationMax = 1.6f;
-    private const int DefaultWordBaseScore = 20;
-    private const int DefaultComboBonusPerStreak = 5;
-    private const int DefaultComboBonusCap = 60;
-    private const float DefaultLevelTimeLimitSeconds = 180f;
+    // Gameplay所需要的常量默认值，可以通过配置表覆盖
+    private const float DefaultV0 = 120f; // 初始速度
+    private const int DefaultS0 = ScoreManager.InitialScore; // 初始分数
+    private const int DefaultDeltaS = 10; // 每次正确填充增加的分数
+    private const float DefaultAlpha = 25f; // 速度增加的指数因子
+    private const float DefaultVMax = 260f; // 最大速度
+    private const float DefaultVFast = 600f; // 快速下落速度
+    private const int DefaultMinGridColumns = 7; // 最小列数
+    private const int DefaultMaxGridColumns = 18; // 最大列数
+    private const float DefaultMinCellSize = 42f; // 最小格子尺寸
+    private const float DefaultTmpHorizontalPadding = 6f; // 字母行的TMP字母与格子边界的水平内边距
+    private const float DefaultTmpVerticalPadding = 4f; // 字母行的TMP字母与格子边界的垂直内边距
+    private const float DefaultMinTmpRectSize = 20f; // 字母行的TMP显示的最小矩形尺寸，防止过小导致的显示问题
+    private const float DefaultCrossBlockTmpHorizontalPadding = 6f; // CrossBlock专用TMP水平内边距，适应其特殊形状
+    private const float DefaultCrossBlockTmpVerticalPadding = 4f; // CrossBlock专用TMP垂直内边距
+    private const float DefaultCrossBlockMinTmpRectSize = 20f; // CrossBlock的TMP最小矩形尺寸
+    private const float DefaultCrossBlockCompensationGamma = 0.9f; // CrossBlock速度补偿的gamma值，控制补偿曲线的形状
+    private const float DefaultCrossBlockCompensationMin = 1f; // CrossBlock速度补偿的最小值，防止过度补偿导致的速度过慢
+    private const float DefaultCrossBlockCompensationMax = 1.6f; // CrossBlock速度补偿的最大值，防止过度补偿导致的速度过快
+    private const int DefaultWordBaseScore = 20; // 每个单词的基础分数
+    private const int DefaultComboBonusPerStreak = 5; // 每连击增加的额外分数
+    private const int DefaultComboBonusCap = 60; // 连击奖励的上限
+    private const float DefaultLevelTimeLimitSeconds = 180f; // 每关的时间限制，单位秒
 
     [Header("References")]
-    [SerializeField] private WordGrid wordGrid;
-    [SerializeField] private CrossBlock crossBlock;
-    [SerializeField] private RectTransform panelRect;
+    [SerializeField] private WordGrid wordGrid; // 待填充单词行组件的引用
+    [SerializeField] private CrossBlock crossBlock; // 下落十字方块的引用
+    [SerializeField] private RectTransform panelRect; // 单词行的panel
 
     [Header("Spawn Settings")]
-    [SerializeField] private int spawnCol = 3;
-    [SerializeField] private float holdMoveInitialDelay = 0.18f;
-    [SerializeField] private float holdMoveRepeatInterval = 0.06f;
+    [SerializeField] private int spawnCol = 3; // 初始生成列
+    [SerializeField] private float holdMoveInitialDelay = 0.18f; // 按住移动的初始延迟，单位秒
+    [SerializeField] private float holdMoveRepeatInterval = 0.06f; // 按住移动的重复间隔，单位秒
     [Header("Typography")]
-    [SerializeField] private bool unifyRowLetterFontSize = true;
-    [SerializeField] private float unifiedRowLetterFontSizeMin = 0f;
+    [SerializeField] private bool unifyRowLetterFontSize = true; // 是否统一字母行的字体大小
+    [SerializeField] private float unifiedRowLetterFontSizeMin = 0f; // 统一字母行字体大小的最小值
     [Header("Debug")]
     [SerializeField] private bool debugSpeedLogs = true;
     [SerializeField] private bool debugMoveLogs = true;
@@ -51,31 +52,31 @@ public class GamePlayManager : MonoBehaviour
     [SerializeField] private Color debugGridLineColor = Color.magenta;
     [SerializeField] private float debugGridLineDuration = 0f;
 
-    public event Action<bool> OnGameOver;
-    public event Action<float> OnTimerChanged;
+    public event Action<bool> OnGameOver; // 游戏结束的回调
+    public event Action<float> OnTimerChanged; // 计时器变化的回调，参数为剩余时间秒数
 
     private readonly ScoreManager _scoreManager = new ScoreManager();
-    public ScoreManager ScoreManager => _scoreManager;
+    public ScoreManager ScoreManager => _scoreManager; // 提供ScoreManager的只读访问
 
-    private GameState _state = GameState.Loading;
-    private LexiconConfig _config;
-    private LexiconConfig.LexiconEntry _activeLexiconEntry;
-    private List<WordEntry> _levelWords;
-    private List<List<WordRowData>> _wordGroups;
-    private int _currentGroupIndex;
-    private int _activeColumns = DefaultMinGridColumns;
-    private float _spawnWorldY;
-    private float[] _colWorldX;
-    private float _worldCellSize;
-    private float _worldColumnStep;
-    private Coroutine _startCoroutine;
-    private bool _isFastFallInput;
-    private float _heldNormalFallSpeed;
-    private int _activeSpeedStep;
-    private float _activeNormalSpeed;
-    private float _activeFinalSpeed;
-    private float _activeBaseSpeed;
-    private float _activeCompensatedSpeed;
+    private GameState _state = GameState.Loading; // 当前游戏状态
+    private LexiconConfig _config; // Lexicon配置表的引用
+    private LexiconConfig.LexiconEntry _activeLexiconEntry; // 当前关卡使用的LexiconEntry配置
+    private List<WordEntry> _levelWords; // 当前关卡的单词列表
+    private List<List<WordRowData>> _wordGroups; // 单词组
+    private int _currentGroupIndex; // 当前单词组索引
+    private int _activeColumns = DefaultMinGridColumns; // 当前关卡的列数，根据最长单词长度动态调整
+    private float _spawnWorldY; // 方块生成的世界坐标Y值，根据UI布局动态计算
+    private float[] _colWorldX; // 每列的世界坐标X值，根据UI布局动态计算
+    private float _worldCellSize; // 格子的世界尺寸（高度），根据UI布局动态计算
+    private float _worldColumnStep; // 列与列之间的世界坐标间距，根据UI布局动态计算
+    private Coroutine _startCoroutine; // 启动关卡的协程引用，用于在需要时停止
+    private bool _isFastFallInput; // 当前是否有快速下落输入
+    private float _heldNormalFallSpeed; // Hold模式下计算出的动态正常下落速度
+    private int _activeSpeedStep; // 当前速度档位
+    private float _activeNormalSpeed; // 补偿前的正常下落速度
+    private float _activeFinalSpeed; // 本帧最终使用的下落速度
+    private float _activeBaseSpeed; // 当前基础下落速度
+    private float _activeCompensatedSpeed; // 补偿后的正常下落速度
     private int _lastLoggedSpeedStep = int.MinValue;
     private float _lastLoggedNormalSpeed = -1f;
     private float _lastLoggedFinalSpeed = -1f;
@@ -83,15 +84,19 @@ public class GamePlayManager : MonoBehaviour
     private float _lastLoggedCompensatedSpeed = -1f;
     private bool _lastLoggedFastFall;
     private float _lastLoggedCompensationFactor = -1f;
-    private float _activeCompensationFactor = 1f;
-    private int _holdMoveDirection;
+    private float _activeCompensationFactor = 1f; // 当前启用的速度补偿因子
+    private int _holdMoveDirection; // 当前按住移动的方向：-1表示左，1表示右，0表示没有
     private float _nextHoldMoveTime;
     private readonly HashSet<string> _columnGuardLogKeys = new HashSet<string>();
-    private float _remainingTimeSeconds;
-    private bool _timerExpired;
+    private float _remainingTimeSeconds; // 关卡剩余时间，单位秒
+    private bool _timerExpired; // 计时器是否已到期
 
+    /// <summary>
+    /// 开始关卡
+    /// </summary>
     public void StartLevel()
     {
+        // 加载配置表和关卡数据，重置状态和分数，等待UI布局完成后启动关卡流程
         _config = Resources.Load<LexiconConfig>("LexiconConfig");
         _state = GameState.Loading;
 
@@ -105,14 +110,15 @@ public class GamePlayManager : MonoBehaviour
         _timerExpired = false;
         _remainingTimeSeconds = Mathf.Max(0f, GetLevelTimeLimitSeconds());
         OnTimerChanged?.Invoke(_remainingTimeSeconds);
-
+        
+        // 如果已经有启动协程在运行，先停止它，确保不会有多个协程同时尝试启动关卡流程
         if (_startCoroutine != null)
             StopCoroutine(_startCoroutine);
         _startCoroutine = StartCoroutine(StartLevelDelayed());
     }
 
     /// <summary>
-    /// Wait one frame so Unity layout system computes cell world positions.
+    /// 延迟一帧，确保Unity的UI布局完成
     /// </summary>
     private IEnumerator StartLevelDelayed()
     {
@@ -121,7 +127,10 @@ public class GamePlayManager : MonoBehaviour
         yield return null;
         LoadLevelWords();
     }
-
+    
+    /// <summary>
+    /// 清理当前关卡状态
+    /// </summary>
     public void Cleanup()
     {
         if (_startCoroutine != null)
@@ -134,36 +143,48 @@ public class GamePlayManager : MonoBehaviour
             crossBlock.Deactivate();
     }
 
+    /// <summary>
+    /// 每帧根据当前状态处理输入、更新方块下落、检查碰撞、更新计时器等逻辑
+    /// </summary>
     private void Update()
     {
         if (_state == GameState.Falling)
         {
+            // 处理输入
             HandleInput();
+            // 处理方块下落
             UpdateFalling();
         }
-
+        // 更新计时器
         UpdateLevelTimer();
+        // 画出调试用的网格线
         DrawDiscreteGridDebugLines();
     }
 
     #region Loading
-
+    /// <summary>
+    /// 加载当前关卡所需要的单词列表
+    /// </summary>
     private void LoadLevelWords()
     {
+        // 从游戏上下文获取当前使用的词库
         var lexicon = GameContext.CurrentLexicon;
+        // 根据词库从配置表获取对应的配置
         _activeLexiconEntry = _config.GetEntry(lexicon);
         if (_activeLexiconEntry == null)
             Debug.LogWarning("[GamePlayManager] No lexicon entry found, using default dynamic speed values.");
-        int wordsPerLevel = _activeLexiconEntry != null ? _activeLexiconEntry.wordsPerLevel : 10;
-        InitializeDropSpeedState();
+        int wordsPerLevel = _activeLexiconEntry != null ? _activeLexiconEntry.wordsPerLevel : 10; // 获取每关单词数量，默认为10
+        InitializeDropSpeedState(); // 初始化下落速度状态，确保在获取单词前就设置好相关参数
 
+        // 从数据库获取当前关卡使用的单词列表
         _levelWords = GameContext.Database.GetPlayableWordsForLevel(
             lexicon,
             GameContext.CurrentLevel,
             wordsPerLevel,
             GetPlayableMaxWordLength(),
             UseLengthPriorityOrder());
-
+        
+        // 如果没有可用的单词，直接结束关卡
         if (_levelWords == null || _levelWords.Count == 0)
         {
             Debug.LogWarning("[GamePlayManager] No playable words for this level");
@@ -171,19 +192,29 @@ public class GamePlayManager : MonoBehaviour
             OnGameOver?.Invoke(true);
             return;
         }
-
+        
+        // 根据单词列表动态计算当前关卡的列数，确保能够容纳最长的单词，同时不超过配置表的最大列数
         _activeColumns = ResolveActiveColumns(_levelWords);
         if (debugSpeedLogs)
         {
             Debug.Log($"[GamePlayManager] Grid columns resolved to {_activeColumns} (min={GetMinGridColumns()}, max={GetMaxGridColumns()})");
             Debug.Log($"[GamePlayManager] Word order mode: {(UseLengthPriorityOrder() ? "length-desc" : "length-asc")}.");
         }
+        // 将单词列表拆分成若干组，每组包含固定数量的单词
         _wordGroups = SplitIntoGroups(_levelWords, 4, _activeColumns);
         _currentGroupIndex = 0;
-
+        
+        // 开始生成第一组的单词行
         StartGroup();
     }
-
+    
+    /// <summary>
+    /// 将单词列表拆分成若干组，每组包含固定数量的单词
+    /// </summary>
+    /// <param name="words"></param>
+    /// <param name="groupSize"></param>
+    /// <param name="columns"></param>
+    /// <returns></returns>
     private List<List<WordRowData>> SplitIntoGroups(List<WordEntry> words, int groupSize, int columns)
     {
         var groups = new List<List<WordRowData>>();
@@ -205,13 +236,23 @@ public class GamePlayManager : MonoBehaviour
         return groups;
     }
 
+    /// <summary>
+    /// 为单个词条构建一行 <see cref="WordRowData"/>：将 headWord 映射到网格列、随机挖一个待填空格。
+    /// </summary>
+    /// <param name="entry">词条</param>
+    /// <param name="columns">本关列数</param>
+    /// <returns>含 cells、blankIndices 的行数据，rowIndex 由 WordGrid 在展示时写入</returns>
     private WordRowData BuildWordRowData(WordEntry entry, int columns)
     {
-        string word = entry.headWord.ToLower();
+        string word = entry.headWord;
         int safeColumns = Mathf.Max(DefaultMinGridColumns, columns);
         var cells = new CellData[safeColumns];
+
+        // 本行实际显示的字母个数（词更长时只显示中间 visibleLength 个字符）
         int visibleLength = Mathf.Min(word.Length, safeColumns);
+        // 在完整 word 字符串中的起始下标（词被截断时取中间段）
         int wordStart = Mathf.Max(0, (word.Length - visibleLength) / 2);
+        // 在网格行中的起始列（列比可见字母多时左右居中）
         int colStart = Mathf.Max(0, (safeColumns - visibleLength) / 2);
 
         for (int c = 0; c < safeColumns; c++)
@@ -227,6 +268,7 @@ public class GamePlayManager : MonoBehaviour
             };
         }
 
+        // 收集所有已显示字母的列，用于随机挑选待填空格
         var allIndices = new List<int>();
         for (int c = 0; c < safeColumns; c++)
         {
@@ -255,15 +297,20 @@ public class GamePlayManager : MonoBehaviour
 
     #region Group Flow
 
+    /// <summary>
+    /// 开始当前单词组的流程：在 WordGrid 上展示单词行，缓存世界坐标，切换状态到 Spawning。
+    /// </summary>
     private void StartGroup()
     {
+        // 如果当前组索引超出范围，说明所有组都已完成，触发关卡完成事件
         if (_currentGroupIndex >= _wordGroups.Count)
         {
             _state = GameState.LevelComplete;
             OnGameOver?.Invoke(true);
             return;
         }
-
+        
+        // 获取当前组的数据，调用 WordGrid 的 SetupGroup 方法展示单词行，并传入当前关卡的列数、格子尺寸、TMP内边距等参数
         var group = _wordGroups[_currentGroupIndex];
         wordGrid.SetupGroup(
             group,
@@ -390,11 +437,13 @@ public class GamePlayManager : MonoBehaviour
 
     private char[] GenerateDecoys(char exclude, int count)
     {
+        bool upper = char.IsUpper(exclude);
+        char excludeLower = char.ToLower(exclude);
         var pool = new List<char>();
         for (char c = 'a'; c <= 'z'; c++)
         {
-            if (c != exclude)
-                pool.Add(c);
+            if (c != excludeLower)
+                pool.Add(upper ? char.ToUpper(c) : c);
         }
 
         var result = new char[count];
@@ -658,6 +707,11 @@ public class GamePlayManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 根据单词列表动态计算当前关卡的列数(最长单词的词长)，确保能够容纳最长的单词，同时不超过配置表的最大列数
+    /// </summary>
+    /// <param name="words"></param>
+    /// <returns></returns>
     private int ResolveActiveColumns(List<WordEntry> words)
     {
         int longest = 0;
@@ -836,6 +890,7 @@ public class GamePlayManager : MonoBehaviour
         return Mathf.Clamp(computed, v0, Mathf.Max(v0, vMax));
     }
 
+    // 根据配置获取各项参数，若配置缺失则使用默认值
     private float GetBaseFallSpeed() => _activeLexiconEntry != null ? _activeLexiconEntry.v0 : DefaultV0;
     private int GetStartScore() => _activeLexiconEntry != null ? _activeLexiconEntry.s0 : DefaultS0;
     private int GetScoreStep() => _activeLexiconEntry != null ? _activeLexiconEntry.deltaS : DefaultDeltaS;
